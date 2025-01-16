@@ -1,0 +1,30 @@
+# Flight Settings
+flight-duration: 300
+flight-cooldown: 60
+welcome-message-enabled: true
+
+# Messages (supports color codes with &)
+messages:
+  plugin-enabled: "&aFlyCraft has been enabled!"
+  plugin-disabled: "&cFlyCraft has been disabled!"
+
+  # General Messages
+  player-only: "&cThis command can only be used by players!"
+  no-permission: "&cYou don't have permission to use this command!"
+  welcome: "&aWelcome! Use /fly to toggle flight mode!"
+
+  # Flight Messages
+  flight-enabled: "&aFlight enabled for %time% seconds!"
+  flight-disabled: "&cFlight disabled!"
+  flight-expired: "&cYour flight time has expired!"
+  cooldown: "&cYou must wait %time% seconds before flying again!"
+  not-flying: "&cYou are not currently flying!"
+
+  # Flight Time Messages
+  time-remaining: "&aYou have %time% seconds of flight remaining!"
+
+  # Speed Messages
+  speed-usage: "&cUsage: /flyspeed <1-10>"
+  speed-invalid-range: "&cSpeed must be between 1 and 10!"
+  speed-invalid-number: "&cPlease enter a valid number!"
+  speed-set: "&aFlying speed set to %speed%"
