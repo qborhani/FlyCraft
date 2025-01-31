@@ -170,7 +170,14 @@ For help, feature requests, or bug reports:
 ---
 
 ## License
-FlyCraft is an open-source project licensed under the **MIT License**. You are free to modify and distribute it as long as proper credit is given.
+License
+FlyCraft is an open-source project licensed under the GNU General Public License v3.0 (GPL-3.0). You are free to use, modify, and distribute it, provided that:
+
+- Proper credit is given to the original author (Borhani).
+- Any modifications or redistributed versions are also licensed under GPL-3.0.
+- The original license is included in all copies or substantial portions of the project.
+
+For full license details, see: [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ---
 
