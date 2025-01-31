@@ -1,7 +1,7 @@
 package net.web1337.borhani.flyCraft.commands;
 
 import net.web1337.borhani.flyCraft.FlyCraft;
-import org.bukkit.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,20 +23,37 @@ public class FlyCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
+        // Check if the player has permission
         if (!player.hasPermission("flycraft.use")) {
             player.sendMessage(plugin.getConfigMessage("messages.no-permission"));
             return true;
         }
 
-        // Check for cooldown
+        // Check if the player is on cooldown
         if (plugin.getFlyCooldowns().containsKey(player.getUniqueId())) {
             int timeLeft = plugin.getFlyCooldowns().get(player.getUniqueId());
-            player.sendMessage(plugin.getConfigMessage("messages.cooldown").replace("%time%", String.valueOf(timeLeft)));
+            player.sendMessage(plugin.getConfigMessage("messages.cooldown")
+                    .replace("%time%", String.valueOf(timeLeft)));
             return true;
         }
 
-        // Call the toggleFlight method to handle toggling
-        plugin.toggleFlight(player);
+        // If there are arguments, try to toggle flight for another player
+        if (args.length > 0) {
+            if (!player.hasPermission("flycraft.others")) {
+                player.sendMessage(plugin.getConfigMessage("messages.no-permission"));
+                return true;
+            }
+
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target == null) {
+                player.sendMessage("§cPlayer not found!");
+                return true;
+            }
+            plugin.toggleFlight(target);
+        } else {
+            plugin.toggleFlight(player);
+        }
+
         return true;
     }
 }

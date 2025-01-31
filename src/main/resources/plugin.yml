@@ -1,27 +1,32 @@
 name: FlyCraft
 main: net.web1337.borhani.flyCraft.FlyCraft
-version: 1.3
+version: 1.4
 author: borhani
 description: A plugin that enhances flying features in Minecraft.
 website: https://borhani.web1337.net
 api-version: 1.13
+libraries:
+  - net.dv8tion:JDA:5.0.0-beta.13
 commands:
   fly:
     description: Toggle flying mode.
     usage: /fly [player]
     aliases: [flymode]
   flycraftreload:
-    description: Reloads the config file.
+    description: Reloads the FlyCraft configuration.
     usage: /flycraftreload
-    aliases: [fcr]
+    aliases: [fcr, flyreload]
+    permission: flycraft.reload
   flyspeed:
-    description: changing speed of fly.
-    usage: /flyspeed [speed]
+    description: Change flying speed.
+    usage: /flyspeed <1-10>
+    permission: flycraft.use
 permissions:
   flycraft.use:
     description: Allows the player to toggle fly mode.
     default: true
   flycraft.reload:
+    description: Allows reloading the plugin configuration.
     default: op
   flycraft.others:
     description: Allows toggling fly mode for other players.
@@ -29,3 +34,4 @@ permissions:
 softdepend:
   - PlaceholderAPI
   - Vault
+  - DiscordSRV

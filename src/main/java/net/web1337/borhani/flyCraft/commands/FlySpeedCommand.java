@@ -15,39 +15,41 @@ public class FlySpeedCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-
-            // Check if the player has permission to change speed
-            if (!player.hasPermission("flycraft.speed")) {
-                player.sendMessage(plugin.getConfigMessage("messages.no-permission"));
-                return false;
-            }
-
-            // Check if the player provided a speed value
-            if (args.length != 1) {
-                player.sendMessage(plugin.getConfigMessage("messages.speed-usage"));
-                return false;
-            }
-
-            try {
-                int speed = Integer.parseInt(args[0]);
-
-                // Check if the speed is within the valid range
-                if (speed < 1 || speed > 10) {
-                    player.sendMessage(plugin.getConfigMessage("messages.speed-invalid-range"));
-                    return false;
-                }
-
-                // Set the flying speed
-                plugin.setFlyingSpeed(player, speed);
-
-            } catch (NumberFormatException e) {
-                player.sendMessage(plugin.getConfigMessage("messages.speed-invalid-number"));
-            }
-        } else {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.getConfigMessage("messages.player-only"));
+            return true;
         }
+
+        Player player = (Player) sender;
+
+        if (!player.hasPermission("flycraft.use")) {
+            player.sendMessage(plugin.getConfigMessage("messages.no-permission"));
+            return true;
+        }
+
+        if (args.length != 1) {
+            player.sendMessage(plugin.getConfigMessage("messages.speed-usage"));
+            return true;
+        }
+
+        try {
+            int speed = Integer.parseInt(args[0]);
+            if (speed < 1 || speed > 10) {
+                player.sendMessage(plugin.getConfigMessage("messages.speed-invalid-range"));
+                return true;
+            }
+
+            plugin.setFlyingSpeed(player, speed);
+            
+            // Send Discord message about speed change if player is flying
+            if (player.isFlying()) {
+                plugin.sendSpeedChangeMessage(player, speed);
+            }
+
+        } catch (NumberFormatException e) {
+            player.sendMessage(plugin.getConfigMessage("messages.speed-invalid-number"));
+        }
+
         return true;
     }
 }

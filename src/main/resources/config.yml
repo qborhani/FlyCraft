@@ -28,3 +28,53 @@ messages:
   speed-invalid-range: "&cSpeed must be between 1 and 10!"
   speed-invalid-number: "&cPlease enter a valid number!"
   speed-set: "&aFlying speed set to %speed%"
+
+  # Discord Admin Messages (sent to players in-game)
+  discord-flight-enabled: "&aFlight enabled by Discord admin for %time% seconds!"
+  discord-flight-disabled: "&cFlight disabled by Discord admin!"
+  discord-speed-set: "&aFlying speed set to %speed% by Discord admin!"
+
+# Discord Integration
+discord:
+  enabled: true
+  # Right-click channel in Discord -> Copy ID (Developer Mode must be enabled)
+  channel-id: "YOUR_CHANNEL_ID"
+  # Bot token from Discord Developer Portal
+  bot-token: "YOUR_BOT_TOKEN"
+  bot-settings:
+    status: "ONLINE"  # ONLINE, IDLE, DO_NOT_DISTURB, INVISIBLE
+    activity:
+      type: "PLAYING"  # PLAYING, WATCHING, LISTENING, COMPETING
+      message: "with %online_players% players"  # Supports %online_players%, %max_players%, %server_name%
+  commands:
+    enabled: true
+    prefix: "!"  # Command prefix for Discord commands
+    allowed-roles:  # Discord role IDs that can use commands
+      - "ROLE_ID_1"
+      - "ROLE_ID_2"
+    commands:
+      stopfly:
+        enabled: true
+        usage: "stopfly <player>"
+      startfly:
+        enabled: true
+        usage: "startfly <player>"
+      flyspeed:
+        enabled: true
+        usage: "flyspeed <player> <1-10>"
+  # Message Settings
+  message-format:
+    flight-start: "🛫 **%player%** has started flying!\nSpeed: **%speed%x**\nDuration: **%duration%** seconds"
+    flight-end: "🛬 **%player%** has stopped flying!\nTotal flight time: **%time%**"
+    speed-change: "🔄 **%player%** changed flight speed to **%speed%x**"
+  embed:
+    enabled: true
+    color:
+      start: "#3498db"  # Blue
+      end: "#e74c3c"    # Red
+      speed: "#f1c40f"  # Yellow
+    thumbnail:
+      enabled: true
+      url: "https://minotar.net/avatar/%player%/64"
+    footer:
+      text: "FlyCraft • %server_name%"
