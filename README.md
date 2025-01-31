@@ -145,7 +145,7 @@ All messages are customizable in `config.yml`:
 
 ## 11. Development Information
 - **API Version:** 1.13
-- **Java Version:** 1.8+
+- **Java Version:** 21
 - **Build System:** Maven-based
 - **Open Source:** Yes
 - **Extendable Architecture:** Designed for future expansions
