@@ -1,0 +1,159 @@
+FlyCraft v1.4 Documentation
+==========================
+
+1. Core Features
+---------------
+- Toggle flight mode for players
+- Configurable flight duration
+- Configurable cooldown system
+- Customizable fly speeds (1-10)
+- Permission-based access
+- Welcome messages for new players
+- Full Discord integration
+
+2. Commands
+----------
+2.1 In-Game Commands:
+    /fly [player]
+    - Description: Toggle flying mode
+    - Permission: flycraft.use
+    - Aliases: flymode
+    - Optional: [player] - Toggle flight for another player (requires flycraft.others)
+
+    /flyspeed <1-10>
+    - Description: Change flying speed
+    - Permission: flycraft.use
+    - Range: 1 (slowest) to 10 (fastest)
+
+    /flycraftreload
+    - Description: Reloads the plugin configuration
+    - Permission: flycraft.reload
+    - Aliases: fcr, flyreload
+
+2.2 Discord Commands:
+    !startfly <player>
+    - Enables flight for specified player
+    - Requires configured Discord role
+
+    !stopfly <player>
+    - Disables flight for specified player
+    - Requires configured Discord role
+
+    !flyspeed <player> <1-10>
+    - Sets player's flight speed
+    - Requires configured Discord role
+
+3. Permissions
+-------------
+flycraft.use
+- Description: Allows using flight mode
+- Default: true
+
+flycraft.reload
+- Description: Allows reloading configuration
+- Default: op
+
+flycraft.others
+- Description: Allows toggling flight for others
+- Default: op
+
+4. Configuration (config.yml)
+---------------------------
+4.1 Flight Settings:
+- flight-duration: Duration of flight in seconds (default: 300)
+- flight-cooldown: Cooldown between flights in seconds (default: 60)
+- welcome-message-enabled: Show welcome message to new players
+
+4.2 Discord Integration:
+- Enabled/Disabled toggle
+- Channel ID configuration
+- Bot token configuration
+- Custom bot status settings
+- Role-based command permissions
+- Customizable message formats
+- Embed support with custom colors
+
+4.3 Bot Settings:
+- Status options: ONLINE, IDLE, DO_NOT_DISTURB, INVISIBLE
+- Activity types: PLAYING, WATCHING, LISTENING, COMPETING
+- Custom activity message with placeholders:
+  %online_players%
+  %max_players%
+  %server_name%
+
+5. Discord Features
+-----------------
+5.1 Notifications:
+- Flight start/stop notifications
+- Speed change notifications
+- Total flight time tracking
+- Player avatars in embeds
+
+5.2 Embed Colors:
+- Flight Start: Blue (#3498db)
+- Flight End: Red (#e74c3c)
+- Speed Change: Yellow (#f1c40f)
+
+5.3 Message Formatting:
+- Supports custom emojis
+- Player name integration
+- Speed display
+- Duration tracking
+- Server name integration
+
+6. Time Formatting
+----------------
+Automatically formats time periods:
+- "25 seconds"
+- "1 minute 30 seconds"
+- "2 hours 15 minutes 45 seconds"
+
+7. Dependencies
+-------------
+Required:
+- Spigot/Paper 1.13+
+- JDA (Discord API) 5.0.0-beta.13
+
+Optional:
+- PlaceholderAPI
+- Vault
+- DiscordSRV
+
+8. Technical Features
+-------------------
+- Async Discord messaging
+- Safe reload handling
+- Automatic cooldown management
+- Flight time tracking
+- Speed conversion handling
+- Error logging and handling
+- Event-based architecture
+
+9. Messages
+----------
+All messages are customizable in config.yml:
+- Plugin enable/disable messages
+- Permission messages
+- Flight status messages
+- Speed change notifications
+- Welcome messages
+- Discord notifications
+- Admin notifications
+
+10. Safety Features
+-----------------
+- Permission checks
+- Input validation
+- Error handling
+- Safe Discord reconnection
+- Cooldown enforcement
+- Flight duration limits
+- Speed range limits (1-10)
+
+11. Development Information
+-------------------------
+- API Version: 1.13
+- Java Version: 1.8+
+- Maven-based project
+- Open source
+- Extendable architecture 
