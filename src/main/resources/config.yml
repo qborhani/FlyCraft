@@ -1,3 +1,6 @@
+# Configuration Version
+config-version: 1.4
+
 # Flight Settings
 flight-duration: 300
 flight-cooldown: 60
@@ -78,3 +81,7 @@ discord:
       url: "https://minotar.net/avatar/%player%/64"
     footer:
       text: "FlyCraft • %server_name%"
+update-checker:
+  enabled: true
+  notify-ops: true
+  debug: false  # Set to true to see detailed error messages

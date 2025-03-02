@@ -20,16 +20,18 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.time.Instant;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.web1337.borhani.flyCraft.discord.DiscordCommandHandler;
+import net.web1337.borhani.flyCraft.utils.UpdateChecker;
 
 public class FlyCraft extends JavaPlugin implements Listener {
-
     private FileConfiguration config;
+    private UpdateChecker updateChecker;
     private final HashMap<UUID, Integer> flyingPlayers = new HashMap<>();
     private final HashMap<UUID, Integer> flyCooldowns = new HashMap<>();
     private final HashMap<UUID, Long> flightStartTimes = new HashMap<>();
@@ -42,16 +44,20 @@ public class FlyCraft extends JavaPlugin implements Listener {
     public void onEnable() {
         saveDefaultConfig();
         config = getConfig();
-
+    
+        // Initialize update checker
+        updateChecker = new UpdateChecker(this);
+        updateChecker.checkUpdate();
+    
         getServer().getPluginManager().registerEvents(this, this);
-
+    
         // Register the FlyCommand with the plugin instance
         getCommand("fly").setExecutor(new FlyCommand(this));
         getCommand("flyspeed").setExecutor(new FlySpeedCommand(this));
-
+    
         // Start the cooldown and duration checker task
         startCooldownChecker();
-
+    
         // Register the reload command
         getCommand("flycraftreload").setExecutor((sender, command, label, args) -> {
             if (sender.hasPermission("flycraft.reload")) {
@@ -64,15 +70,15 @@ public class FlyCraft extends JavaPlugin implements Listener {
             }
             return true;
         });
-
+    
         // Load Discord config first
         loadDiscordConfig();
         // Then setup Discord integration
         setupDiscord();
-
+    
         getLogger().info(getConfigMessage("messages.plugin-enabled"));
     }
-
+    
     @Override
     public void onDisable() {
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -86,18 +92,18 @@ public class FlyCraft extends JavaPlugin implements Listener {
         }
         getLogger().info(getConfigMessage("messages.plugin-disabled"));
     }
-
+    
     // Make getConfigMessage public so FlyCommand can access it
     public String getConfigMessage(String path) {
         String message = config.getString(path);
         return ChatColor.translateAlternateColorCodes('&', message != null ? message : "Message not found: " + path);
     }
-
+    
     // Getter for flyCooldowns map
     public HashMap<UUID, Integer> getFlyCooldowns() {
         return flyCooldowns;
     }
-
+    
     // Toggle flight method
     public void toggleFlight(Player player) {
         if (player.getAllowFlight()) {
@@ -118,7 +124,7 @@ public class FlyCraft extends JavaPlugin implements Listener {
             
             flyingPlayers.remove(player.getUniqueId());
             player.sendMessage(getConfigMessage("messages.flight-disabled"));
-
+    
             int cooldownTime = config.getInt("flight-cooldown", 60);
             flyCooldowns.put(player.getUniqueId(), cooldownTime);
         } else {
@@ -136,55 +142,62 @@ public class FlyCraft extends JavaPlugin implements Listener {
             player.sendMessage(getConfigMessage("messages.flight-enabled").replace("%time%", String.valueOf(flyTime)));
         }
     }
-
+    
     // Set flying speed
     public void setFlyingSpeed(Player player, int speed) {
         float flySpeed = (float) speed / 10.0f; // Convert to float (range from 0.1 to 1.0)
         player.setFlySpeed(flySpeed);
         player.sendMessage(getConfigMessage("messages.speed-set").replace("%speed%", String.valueOf(speed)));
     }
-
+    
     private void startCooldownChecker() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                // Update flying time
-                for (UUID uuid : new HashMap<>(flyingPlayers).keySet()) {
-                    int timeLeft = flyingPlayers.get(uuid);
+                // Update flying time using iterator for better performance
+                Iterator<Map.Entry<UUID, Integer>> flyingIterator = flyingPlayers.entrySet().iterator();
+                while (flyingIterator.hasNext()) {
+                    Map.Entry<UUID, Integer> entry = flyingIterator.next();
+                    int timeLeft = entry.getValue();
                     if (timeLeft <= 0) {
-                        Player player = Bukkit.getPlayer(uuid);
-                        if (player != null) {
+                        Player player = Bukkit.getPlayer(entry.getKey());
+                        if (player != null && player.isOnline()) {
                             player.setAllowFlight(false);
                             player.setFlying(false);
                             player.sendMessage(getConfigMessage("messages.flight-expired"));
                         }
-                        flyingPlayers.remove(uuid);
+                        flyingIterator.remove();
+                        flightStartTimes.remove(entry.getKey());
                     } else {
-                        flyingPlayers.put(uuid, timeLeft - 1);
+                        entry.setValue(timeLeft - 1);
                     }
                 }
-
-                // Update cooldowns
-                for (UUID uuid : new HashMap<>(flyCooldowns).keySet()) {
-                    int timeLeft = flyCooldowns.get(uuid);
+    
+                // Update cooldowns using iterator for better performance
+                Iterator<Map.Entry<UUID, Integer>> cooldownIterator = flyCooldowns.entrySet().iterator();
+                while (cooldownIterator.hasNext()) {
+                    Map.Entry<UUID, Integer> entry = cooldownIterator.next();
+                    int timeLeft = entry.getValue();
                     if (timeLeft <= 0) {
-                        flyCooldowns.remove(uuid);
+                        cooldownIterator.remove();
                     } else {
-                        flyCooldowns.put(uuid, timeLeft - 1);
+                        entry.setValue(timeLeft - 1);
                     }
                 }
             }
         }.runTaskTimer(this, 20L, 20L);
     }
-
+    
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (config.getBoolean("welcome-message-enabled", true)) {
             player.sendMessage(getConfigMessage("messages.welcome"));
         }
+        // Check for updates when an operator joins
+        updateChecker.notifyPlayer(player);
     }
-
+    
     @EventHandler
     public void onPlayerToggleFlight(PlayerToggleFlightEvent event) {
         Player player = event.getPlayer();
@@ -193,11 +206,11 @@ public class FlyCraft extends JavaPlugin implements Listener {
             player.sendMessage(getConfigMessage("messages.no-permission"));
         }
     }
-
+    
     public <K, V> Map<K, V> getFlyingPlayers() {
         return null;
     }
-
+    
     private void setupDiscord() {
         if (discordEnabled) {
             getLogger().info("Initializing Discord integration...");
@@ -222,12 +235,12 @@ public class FlyCraft extends JavaPlugin implements Listener {
                         
                         // Send startup message instead of reload message
                         channel.sendMessage("✅ FlyCraft Discord integration started!").queue();
-
+    
                         // Add command handler
                         if (getConfig().getBoolean("discord.commands.enabled", true)) {
                             jda.addEventListener(new DiscordCommandHandler(this));
                         }
-
+    
                         // Set bot status
                         setupBotStatus();
                     } else {
@@ -245,7 +258,7 @@ public class FlyCraft extends JavaPlugin implements Listener {
             }
         }
     }
-
+    
     private void loadDiscordConfig() {
         discordEnabled = getConfig().getBoolean("discord.enabled", false);
         discordChannelId = getConfig().getString("discord.channel-id", "");
@@ -268,14 +281,14 @@ public class FlyCraft extends JavaPlugin implements Listener {
             }
         }
     }
-
+    
     public void sendFlightMessage(Player player, boolean isFlying, double speed, long totalFlightTime) {
         if (!discordEnabled || jda == null) return;
         
         try {
             TextChannel channel = jda.getTextChannelById(discordChannelId);
             if (channel == null) return;
-
+    
             String messageKey = isFlying ? "flight-start" : "flight-end";
             String messageFormat = getConfig().getString("discord.message-format." + messageKey, "");
             
@@ -311,7 +324,7 @@ public class FlyCraft extends JavaPlugin implements Listener {
                 .setDescription(messageFormat)
                 .addField("Player", player.getName(), true)
                 .addField("Speed", String.format("%.1fx", speed), true);
-
+    
             // Add flight time field for flight end
             if (!isFlying && totalFlightTime > 0) {
                 embed.addField("Total Flight Time", formatFlightTime(totalFlightTime), false);
@@ -335,7 +348,7 @@ public class FlyCraft extends JavaPlugin implements Listener {
             getLogger().warning("Failed to send Discord embed: " + e.getMessage());
         }
     }
-
+    
     // Add this helper method to format flight time
     private String formatFlightTime(long seconds) {
         if (seconds < 60) {
@@ -366,14 +379,14 @@ public class FlyCraft extends JavaPlugin implements Listener {
             ).trim();
         }
     }
-
+    
     public void sendSpeedChangeMessage(Player player, double speed) {
         if (!discordEnabled || jda == null) return;
         
         try {
             TextChannel channel = jda.getTextChannelById(discordChannelId);
             if (channel == null) return;
-
+    
             String messageFormat = getConfig().getString("discord.message-format.speed-change", "🔄 **%player%** changed flight speed to **%speed%x**");
             
             messageFormat = messageFormat
@@ -411,14 +424,14 @@ public class FlyCraft extends JavaPlugin implements Listener {
             getLogger().warning("Failed to send Discord speed change message: " + e.getMessage());
         }
     }
-
+    
     public String getDiscordChannelId() {
         return discordChannelId;
     }
-
+    
     private void setupBotStatus() {
         if (jda == null) return;
-
+    
         // Set online status
         String statusStr = getConfig().getString("discord.bot-settings.status", "ONLINE");
         OnlineStatus status;
@@ -428,14 +441,14 @@ public class FlyCraft extends JavaPlugin implements Listener {
             status = OnlineStatus.ONLINE;
         }
         jda.getPresence().setStatus(status);
-
+    
         // Set activity
         String activityType = getConfig().getString("discord.bot-settings.activity.type", "PLAYING");
         String activityMessage = getConfig().getString("discord.bot-settings.activity.message", "with %online_players% players")
             .replace("%online_players%", String.valueOf(Bukkit.getOnlinePlayers().size()))
             .replace("%max_players%", String.valueOf(Bukkit.getMaxPlayers()))
             .replace("%server_name%", Bukkit.getServer().getName());
-
+    
         Activity activity;
         try {
             Activity.ActivityType type = Activity.ActivityType.valueOf(activityType);
